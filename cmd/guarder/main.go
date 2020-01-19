@@ -12,6 +12,7 @@ import (
 	"github.com/kkyr/fig"
 	"github.com/mdlayher/apcupsd"
 
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,8 +23,9 @@ type Config struct {
 		Port uint   `fig:"port,default=3551"`
 	}
 	Logger struct {
-		Level string `fig:"level,default=info"`
-		Path  string `fig:"path,default=/var/log/apcupsd_guarder.log"`
+		Level  string        `fig:"level,default=info"`
+		MaxAge time.Duration `flg:"maxAge,default=168h"`
+		Path   string        `fig:"path,default=/var/log/apcupsd_guarder.log"`
 	}
 	Trigger struct {
 		OnFailed string `fig:"onfailed"`
@@ -44,7 +46,7 @@ var (
 )
 
 func init() {
-	if err := fig.Load(&configure, fig.File("apcupsd_guarder.yaml"), fig.Dirs(".", "/etc/"), ); err != nil {
+	if err := fig.Load(&configure, fig.File("apcupsd_guarder.yaml"), fig.Dirs(".", "/etc/")); err != nil {
 		panic(err)
 	}
 
@@ -54,11 +56,20 @@ func init() {
 		Level:     logrus.DebugLevel,
 	}
 
-	if lf, err := os.OpenFile(configure.Logger.Path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0660); err != nil {
-		log.Fatal(err)
+	// @see https://github.com/lestrrat-go/file-rotatelogs
+	logf, err := rotatelogs.New(
+		configure.Logger.Path+"_%Y%m%d",
+		rotatelogs.WithLinkName(configure.Logger.Path),
+		rotatelogs.WithMaxAge(configure.Logger.MaxAge),
+	)
+
+	if err != nil {
+		log.Fatal("failed to create rotatelogs: %s", err)
 	} else {
-		log.SetOutput(lf)
+		log.SetOutput(logf)
 	}
+
+	log.Debugf("logger is initial with file path %s (max age is %v)", configure.Logger.Path, configure.Logger.MaxAge)
 }
 
 func main() {
@@ -106,8 +117,8 @@ func Check() {
 		triedTimes++
 		// if connect failed for first time, do not run ticker
 		if onlineCount <= 0 {
-			//timer.Stop()
-			//ch <- os.Interrupt
+			// timer.Stop()
+			// ch <- os.Interrupt
 			log.Fatal(err)
 		}
 	} else {
