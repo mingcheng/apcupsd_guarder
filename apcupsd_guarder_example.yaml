@@ -1,0 +1,12 @@
+server:
+  host: 127.0.0.1
+  port: 3551
+logger:
+  path: /var/log/apcupsd_guarder.log
+trigger:
+  onfailed: /usr/local/sbin/apcupsd_guarder/failed.sh
+  oncheck: /usr/local/sbin/apcupsd_guarder/check.sh
+check:
+  timeleft: 10m
+  interval: 1m
+  maxTriedTimes: 5
