@@ -3,6 +3,7 @@ server:
   port: 3551
 logger:
   path: /var/log/apcupsd_guarder.log
+  maxAge: 168h # 1week
 trigger:
   onfailed: /usr/local/sbin/apcupsd_guarder/failed.sh
   oncheck: /usr/local/sbin/apcupsd_guarder/check.sh

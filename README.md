@@ -1,6 +1,10 @@
-# apcupsd guarder ：检测 APC UPS 守护进程并执行对应的脚本
+# apcupsd guarder
 
-由于开发机是 Mac 和部署机器在同一个电缆上，但是 Mac 平台的 apcupsd 和系统的电源管理有冲突，因此不能和部署机上的 apcupsd 组成集群。
+## 检测 APC UPS 守护进程并执行对应的脚本
+
+开发机（macOS 平台）和部署机器（Debian）在同根 UPS 电缆上，但是 macOS 平台的第三方 apcupsd 和系统的电源管理有冲突，所以将 UPS 通过 USB 数据线交付部署机管理。
+
+但这样子 macOS 就无法获得 UPS 的信号，极端情况下可能外部电源失效，部署机正常关机了但 macOS 还会非法关机。
 
 于是就有了这个小的 golang 小程序，用于监控指定 apcupsd 的机器监控并执行对应的脚本（例如关机等）。
 
@@ -23,7 +27,10 @@ server:
   port: 3551
 # 日志文件的地址，Mac 下建议使用 $HOME/Library/Logs 目录
 logger:
+  # 主日志文件，父级目录也必须可写
   path: /var/log/apcupsd_guarder.log
+  # 最大日志保留时间，默认一周
+  maxAge: 168h
 # trigger 下分别对应 UPS 电源失效，以及轮询检查的脚本
 trigger:
   onfailed: /usr/local/sbin/apcupsd_guarder/failed.sh
@@ -43,3 +50,13 @@ launchctl load apcupsd_guarder.plist
 ```
 
 即可启动进程。
+
+
+## 依赖项目
+
+* https://github.com/kkyr/fig
+* https://github.com/mdlayher/apcupsd
+* https://github.com/lestrrat-go/file-rotatelogs
+* https://github.com/sirupsen/logrus
+
+`- eof -`
