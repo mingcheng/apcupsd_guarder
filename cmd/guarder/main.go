@@ -100,20 +100,18 @@ func main() {
 			break
 		}
 	}
-
-	// fmt.Println("Gone")
 }
 
 var (
 	triedTimes  uint = 0
 	onlineCount uint = 0
+	lastStatus  *apcupsd.Status
 )
 
 // Check for checking UPS status and running scripts
 func Check() {
 	// Connect to UPS server
-	client, err := apcupsd.Dial("tcp4", fmt.Sprintf("%s:%d", configure.Server.Host, configure.Server.Port))
-	if err != nil {
+	if client, err := apcupsd.Dial("tcp4", fmt.Sprintf("%s:%d", configure.Server.Host, configure.Server.Port)); err != nil {
 		triedTimes++
 		// if connect failed for first time, do not run ticker
 		if onlineCount <= 0 {
@@ -124,37 +122,38 @@ func Check() {
 	} else {
 		log.Infof("Connect apcupsd %s:%d is success", configure.Server.Host, configure.Server.Port)
 		defer client.Close()
-	}
 
-	// get status from UPS server
-	status, err := client.Status()
-	if err != nil {
-		log.Error(err)
-		triedTimes++
+		// get status from UPS server
+		if lastStatus, err = client.Status(); err != nil {
+			log.Error(err)
+			triedTimes++
+		} else {
+			// parse status if not online mark tried times
+			log.Debugf("UPS connected, report time left is %v", lastStatus.TimeLeft)
+			if lastStatus.Status == "ONLINE" {
+				onlineCount++
+				log.Infof("UPS is online, online count is %d", onlineCount)
+				triedTimes = 0
+			} else {
+				log.Warning("UPS status is not online")
+				triedTimes++
+			}
+		}
 	}
-
-	// parse status if not online mark tried times
-	log.Debugf("UPS connected, report time left is %v", status.TimeLeft)
-	if status.Status != "ONLINE" {
-		log.Warning("UPS status is not online")
-	} else {
-		triedTimes = 0
-		onlineCount++
-		log.Infof("UPS is online, online count is %d", onlineCount)
-	}
-
-	// running check scripts every time
-	runScript(configure.Trigger.OnCheck, status)
 
 	// if ups has failed, RUN ON FAILED SCRIPT!
-	if (status.TimeLeft < configure.Check.TimeLeft && status.Status != "ONLINE") || triedTimes > configure.Check.MaxTriedTimes {
+	if triedTimes >= configure.Check.MaxTriedTimes ||
+		(lastStatus != nil && lastStatus.Status != "ONLINE" && lastStatus.TimeLeft < configure.Check.TimeLeft) {
 		if triedTimes > 0 {
 			log.Warnf("max tried times reached for %d", triedTimes)
 		}
 
-		if onlineCount > 0 {
-			runScript(configure.Trigger.OnFailed, status)
-		}
+		log.Warnf("running failed callback script, tried times is %d, online count is %d", triedTimes, onlineCount)
+		runScript(configure.Trigger.OnFailed, lastStatus)
+	} else {
+		// running check scripts every time
+		log.Infof("running check callback script, tried times is %d", triedTimes)
+		runScript(configure.Trigger.OnCheck, lastStatus)
 	}
 }
 
