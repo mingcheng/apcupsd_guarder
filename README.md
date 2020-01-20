@@ -2,6 +2,8 @@
 
 ## 检测 APC UPS 守护进程并执行对应的脚本
 
+![route map](./assets/route-map.png)
+
 开发机（macOS 平台）和部署机器（Debian）在同根 UPS 电缆上，但是 macOS 平台的第三方 apcupsd 和系统的电源管理有冲突，所以将 UPS 通过 USB 数据线交付部署机管理。
 
 但这样子 macOS 就无法获得 UPS 的信号，极端情况下可能外部电源失效，部署机正常关机了但 macOS 还会非法关机。

@@ -143,7 +143,7 @@ func Check() {
 
 	// if ups has failed, RUN ON FAILED SCRIPT!
 	if triedTimes >= configure.Check.MaxTriedTimes ||
-		(lastStatus != nil && lastStatus.Status != "ONLINE" && lastStatus.TimeLeft < configure.Check.TimeLeft) {
+		(lastStatus != nil && lastStatus.Status != "ONLINE" && lastStatus.TimeLeft <= configure.Check.TimeLeft) {
 		if triedTimes > 0 {
 			log.Warnf("max tried times reached for %d", triedTimes)
 		}

@@ -11,9 +11,7 @@
       "mode": "debug",
       // "program": "${fileDirname}",
       "program": "${workspaceFolder}/cmd/guarder/main.go",
-      "env": {
-        "CONSUL_ADDRESS": "faure.local:8500"
-      },
+      "env": {},
       "args": [],
       "preLaunchTask": "task clean"
     }
