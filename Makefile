@@ -17,9 +17,9 @@ download:
 	go get golang.org/dl/${GO}
 	${GO} download
 
-build: download clean
+build: clean
 	@${GO} build -o ${EXEC} ./cmd/...
 
-clean:
+clean: download
 	@rm -f ${EXEC}
 	@${GO} clean ./...
