@@ -135,6 +135,10 @@ func Check() {
 				log.Infof("UPS is online, online count is %d", onlineCount)
 				triedTimes = 0
 			} else {
+				if lastStatus.TimeLeft <= 0 && onlineCount <= 0 {
+					log.Fatal("it seems apcupsd is not initialized")
+				}
+
 				log.Warning("UPS status is not online")
 				triedTimes++
 			}
