@@ -9,20 +9,17 @@
 ###
 
 EXEC=./apcupsd_guarder
+GO=go1.13.6
 
 all: clean build
 
-build: clean
-	@go build -o ${EXEC} ./cmd/...
+download:
+	go get golang.org/dl/${GO}
+	${GO} download
 
-# install: build register.*
-# 	cp -f $(shell pwd)/register.* /etc/systemd/system/
-# 	cp -f $(shell pwd)/consul-register /usr/local/bin/
-
-# uninstall:
-# 	rm -f /usr/local/bin/consul-register
-# 	rm -f /etc/systemd/system/register.*
+build: download clean
+	@${GO} build -o ${EXEC} ./cmd/...
 
 clean:
 	@rm -f ${EXEC}
-	@go clean ./...
+	@${GO} clean ./...
