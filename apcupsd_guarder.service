@@ -1,0 +1,11 @@
+[Unit]
+Description=the ups guarder for acpupsd
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/apcupsd_guarder  
+User=root
+
+[Install]
+WantedBy=network-online.target

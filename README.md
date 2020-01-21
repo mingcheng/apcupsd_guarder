@@ -45,7 +45,7 @@ check:
   maxTriedTimes: 5
 ```
 
-将 `apcupsd_guarder.plist` 放在 `~/Library/LaunchAgents` 中，然后执行
+masOS 平台下，将 `apcupsd_guarder.plist` 放在 `~/Library/LaunchAgents` 中，然后执行
 
 ```
 launchctl load apcupsd_guarder.plist
@@ -53,6 +53,7 @@ launchctl load apcupsd_guarder.plist
 
 即可启动进程。
 
+对应的 GNU/Linux 平台，使用 systemd 的脚本在 `apcupsd_guarder.service` 文件中。
 
 ## 依赖项目
 
