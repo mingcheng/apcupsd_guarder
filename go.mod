@@ -13,5 +13,5 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/tebeka/strftime v0.1.3 // indirect
-	golang.org/dl v0.0.0-20200113210548-1b9ab2716afa // indirect
+	golang.org/dl v0.0.0-20200212233958-09d79dcf4807 // indirect
 )

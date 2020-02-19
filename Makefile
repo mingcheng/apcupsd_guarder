@@ -9,7 +9,7 @@
 ###
 
 EXEC=./apcupsd_guarder
-GO=go1.13.6
+GO=go1.13.8
 
 all: clean build
 

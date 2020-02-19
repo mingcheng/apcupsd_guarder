@@ -64,7 +64,7 @@ func init() {
 	)
 
 	if err != nil {
-		log.Fatal("failed to create rotatelogs: %s", err)
+		log.Fatalf("failed to create rotatelogs: %s", err)
 	} else {
 		log.SetOutput(logf)
 	}
@@ -153,19 +153,27 @@ func Check() {
 		}
 
 		log.Warnf("running failed callback script, tried times is %d, online count is %d", triedTimes, onlineCount)
-		runScript(configure.Trigger.OnFailed, lastStatus)
+		if _, err := runScript(configure.Trigger.OnFailed, lastStatus); err != nil {
+			log.Errorf("ran failed callback script %v with error %v", configure.Trigger.OnFailed, err)
+		}
 	} else {
 		// running check scripts every time
 		log.Infof("running check callback script, tried times is %d", triedTimes)
-		runScript(configure.Trigger.OnCheck, lastStatus)
+		if _, err := runScript(configure.Trigger.OnCheck, lastStatus); err != nil {
+			log.Errorf("ran check callback script %v with error %v", configure.Trigger.OnCheck, err)
+		}
 	}
 }
 
 // runScript for running external scripts and don't care the results
-func runScript(path string, arg interface{}) {
+func runScript(path string, arg interface{}) ([]byte, error) {
 	if _, err := os.Stat(path); err != os.ErrNotExist {
 		log.Debugf("run scripts %v", path)
 		result, _ := json.Marshal(arg)
-		_ = exec.Command(path, string(result)).Start()
+
+		cmd := exec.Command(path, string(result))
+		return cmd.CombinedOutput()
 	}
+
+	return nil, fmt.Errorf("the script %v is not executable", path)
 }
